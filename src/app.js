@@ -2,13 +2,14 @@ import express from "express";
 import path from 'path';
 import mongoose from 'mongoose';
 import routes from './routes';
+require('dotenv').config();
 
 class App{
 
     constructor(){
         this.server = express();
-
-        mongoose.connect('mongodb+srv://devhouse:devhouse@devhouse.kcav2.mongodb.net/devhouse?retryWrites=true&w=majority',
+        // `mongodb+srv://${process.env.DB_PASS}:${process.env.DB_PASS}@${process.env.DB_PASS}.kcav2.mongodb.net/${process.env.DB_PASS}?retryWrites=true&w=majority`
+        mongoose.connect(process.env.DATABASE_CONNECTION_STRING,
         {
             useNewUrlParser: true,
             useUnifiedTopology: true

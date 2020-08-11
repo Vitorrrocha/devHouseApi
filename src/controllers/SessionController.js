@@ -9,7 +9,7 @@ class SessionController{
 
         let user = await User.findOne({ email });
 
-        !user ? user = await User.create({ email }) : user = "Usuario já cadastrado" //operador ternario
+        !user ? user = await User.create({ email }) : user = `Usuario já cadastrado ${user}` //operador ternario
 
 
         return res.json(user);
