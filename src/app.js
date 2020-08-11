@@ -8,7 +8,6 @@ class App{
 
     constructor(){
         this.server = express();
-        // `mongodb+srv://${process.env.DB_PASS}:${process.env.DB_PASS}@${process.env.DB_PASS}.kcav2.mongodb.net/${process.env.DB_PASS}?retryWrites=true&w=majority`
         mongoose.connect(process.env.DATABASE_CONNECTION_STRING,
         {
             useNewUrlParser: true,
