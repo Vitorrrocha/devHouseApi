@@ -34,7 +34,7 @@ This project was developed with the following technologies:
 
 ## 💻 Project
 
-devHouseApi is an online study platform that connects students and teachers.
+DevHouseApi.
 
 ## :memo: License
 
