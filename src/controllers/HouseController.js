@@ -1,112 +1,103 @@
+import * as Yup from 'yup';
 import House from '../models/House';
 import User from '../models/User';
-import * as Yup from 'yup';
 
-class HouseController{
+class HouseController {
+  async index(req, res) {
+    const { status } = req.query;
+    const houses = await House.find({ status }); // vai fazer a busca de todas as casas que possuem o status passado no query params.
 
-    async index(req, res) {
-        const { status } = req.query;
-        const houses = await House.find({ status }) //vai fazer a busca de todas as casas que possuem o status passado no query params.
-        
-        return res.json(houses);
+    return res.json(houses);
+  }
+
+  async store(req, res) {
+    const schema = Yup.object().shape({
+      description: Yup.string().required(),
+      price: Yup.number().required(),
+      location: Yup.string().required(),
+      status: Yup.boolean().required(),
+    });
+    const { filename } = req.file;
+
+    const { description, price, location, status } = req.body;
+
+    const { user_id } = req.headers;
+
+    if (!(await schema.isValid(req.body))) {
+      // verifica o schema é valido com base no schema junto com yup.
+      return res.status(400).json({ error: 'Falha na validação.' });
     }
 
-    async store(req, res){
-        const schema = Yup.object().shape({
-            description: Yup.string().required(),
-            price: Yup.number().required(),
-            location: Yup.string().required(),
-            status: Yup.boolean().required(),
-        });
-        const { filename } = req.file;
-        
-        const { 
-            description,
-            price,
-            location,
-            status, 
-        } = req.body;
+    const house = await House.create({
+      user: user_id,
+      thumbnail: filename,
+      description, // não é necessario escrever "description: description", pois é o mesmo nome da tabela.
+      price,
+      location,
+      status,
+    });
 
-        const { user_id } = req.headers;
+    return res.json(house);
+  }
 
-        if(!(await schema.isValid(req.body))){     //verifica o schema é valido com base no schema junto com yup.
-            return res.status(400).json({ error: 'Falha na validação.'});
-        }
+  async update(req, res) {
+    const schema = Yup.object().shape({
+      description: Yup.string().required(),
+      price: Yup.number().required(),
+      location: Yup.string().required(),
+      status: Yup.boolean().required(),
+    });
 
-        const house = await House.create({
-            user: user_id,
-            thumbnail: filename,
-            description,  //não é necessario escrever "description: description", pois é o mesmo nome da tabela.
-            price,
-            location,
-            status
-        });
-
-        return res.json(house);
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Falha na validação.' });
     }
 
-    async update(req, res) {
-        const schema = Yup.object().shape({
-            description: Yup.string().required(),
-            price: Yup.number().required(),
-            location: Yup.string().required(),
-            status: Yup.boolean().required(),
-        });
+    const { filename } = req.file;
 
-        if(!(await schema.isValid(req.body))){
-            return res.status(400).json({ error: 'Falha na validação.'});
-        }
+    const { description, price, location, status } = req.body;
 
-        const { filename } = req.file;
+    const { user_id } = req.headers;
 
-        const { 
-            description,
-            price,
-            location,
-            status, 
-        } = req.body;
+    const { house_id } = req.params;
 
-        const { user_id } = req.headers;
+    const user = await User.findById(user_id);
 
-        const { house_id } = req.params;
+    const houses = await House.findById(house_id);
 
-        const user = await User.findById(user_id);
-
-        const houses = await House.findById(house_id);
-
-        if(String(user._id) !== String(houses.user)){
-            return res.status(401).json({error: 'Não Autorizado.'})
-        }
-
-        await House.updateOne({_id: house_id},{
-            user: user_id,
-            thumbnail: filename,
-            description,  
-            price,
-            location,
-            status
-        })
-
-        return res.send(`Atualizado com sucesso`)
+    if (String(user._id) !== String(houses.user)) {
+      return res.status(401).json({ error: 'Não Autorizado.' });
     }
 
-    async destroy(req, res) {
-        const { house_id } = req.body;
-        const { user_id } = req.headers;
+    await House.updateOne(
+      { _id: house_id },
+      {
+        user: user_id,
+        thumbnail: filename,
+        description,
+        price,
+        location,
+        status,
+      }
+    );
 
-        const user = await User.findById(user_id);
-        const houses = await House.findById(house_id);
+    return res.send(`Atualizado com sucesso`);
+  }
 
-        if(String(user._id) !== String(houses.user)){
-        return res.status(401).json({ error: 'Não autorizado.'});
-        }
+  async destroy(req, res) {
+    const { house_id } = req.body;
+    const { user_id } = req.headers;
 
-        await House.findByIdAndDelete({ _id: house_id});
+    const user = await User.findById(user_id);
+    const houses = await House.findById(house_id);
 
-        return res.json({message: "Excluida com sucesso!" });
+    if (String(user._id) !== String(houses.user)) {
+      return res.status(401).json({ error: 'Não autorizado.' });
     }
 
+    await House.findByIdAndDelete({ _id: house_id });
 
+    return res.json({ message: 'Excluida com sucesso!' });
+  }
 }
 
 export default new HouseController();
