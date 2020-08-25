@@ -31,6 +31,7 @@ This project was developed with the following technologies:
   - Express.js
   - MongoDB
   - Yup
+  - Eslint and Prettier
 
 ## 💻 Project
 
